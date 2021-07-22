@@ -3,6 +3,7 @@ const app = express()
 const User = require('./my_user_model')
 const session = require('express-session')
 const hf = require('./config/hf')
+
 // parses values to req.body
 app.use(express.json())
 // set cookies
@@ -13,6 +14,8 @@ app.use(session(
         saveUninitialized: true
     }
 ))
+// set view engine
+app.set('view engine','ejs')
 // controllers
 
 // add new user
@@ -72,6 +75,15 @@ app.post('/sign_in', async (req, res) => {
     res.status(201).send(resData)
 })
 
+app.get('/display', async (req, res) => {
+    let user = new User()
+    try {
+        const users = await user.all()
+        res.render('index', {"users" : users, "keys" : Object.keys(users[0])})
+    } catch(err) {
+        res.status(400).send({"err" : err})
+    }
+})
 
 // set up server
 app.listen(3000, ()=> {
