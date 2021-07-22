@@ -28,18 +28,19 @@ class DBclass {
             })
     }
     
-    insertIntoTable= (db, values) => {
-        db.run(`INSERT INTO users(firstname, lastname, email, password, age) VALUES(?,?,?,?,?)`, values, function(err){
-            if(err) {
-                console.log("unable to insert user data into db")
-                console.log(err)
-            } else {
-                console.log("************************")
-                console.log("succesfully added user to DB")
-                console.log("ID of user is " + this.lastID)
-                console.log("************************")
-            }
-        })
+
+    insertPromise = async(db,sql_script, values) => {
+        return new Promise(function(resolve,reject){
+            db.run(sql_script, values, function(err){
+               if(err){return reject(err);}
+               resolve("user created succesfully");
+             });
+        });
+    }
+    insertIntoTable= async (db, values) => {
+        const user = await this.insertPromise(db,
+                `INSERT INTO users(firstname, lastname, email, password, age) VALUES(?,?,?,?,?)`, values)
+        return user
     }
     
     // returns promise 
@@ -101,14 +102,34 @@ class DBclass {
         }
     } 
 
-    deleteRowById = (db, id) => {
-        db.run(`DELETE from users WHERE rowid=${id}`, function(err) {
-            if(err) {
-                console.log(err)
-            } else {
-                console.log("successfully deleted user with ID=",id)
-            }
+    deleteRowById = async (db, id) => {
+        return new Promise(function(resolve, reject) {
+            db.run(`DELETE from users WHERE rowid=${id}`, function(err) {
+                if(err) {
+                    return reject(err)
+                } else {
+                    resolve(`successfully deleted user with ID=${id}`)
+                }
+            })
         })
+    }
+
+    findByEPpromise = async (db, sql_script) => {
+        return new Promise(function(resolve, reject) {
+            db.get(sql_script, function(err, row) {
+                if(err) {return reject(err)}
+                resolve(row)
+            })
+        })
+    }
+
+    findByEmailAndPassword = async (db, email, password) => {
+        try {
+            const rowid = await this.findByEPpromise(db, `SELECT rowid FROM users WHERE email="${email}" AND password="${password}"`)
+            return rowid
+        } catch(err) {
+            return err
+        }
     }
 }
 

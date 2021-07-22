@@ -10,6 +10,15 @@ const prepareUsersData = (user_datas) => {
     return user_datas
 }
 
+const isAuthenticated = (req, res, next) => {
+    if(req.session.auth) {
+        next()
+    } else {
+        res.send({"msg" : "user must be logged in"})
+    }
+}
+
 module.exports = {
-    prepareUsersData
+    prepareUsersData,
+    isAuthenticated
 }

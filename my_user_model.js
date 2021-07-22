@@ -18,9 +18,10 @@ class User {
             const res = await this.dbObj.insertIntoTable(this.dbConnection,
                 [data.firstname, data.lastname, data.email, data.password, data.age])
             
-            console.log(res)
+            return res
         } else {
             console.error("Unsuccessful end of process")
+            return {"err" : "smth went wrong"}
         }
     }
 
@@ -30,7 +31,6 @@ class User {
             let users = await this.dbObj.retrieveAllRows(this.dbConnection)
             // clear their password
             users = hf.prepareUsersData(users)
-            console.log(users)
             return users
         } catch(err) {
             return err
@@ -41,16 +41,23 @@ class User {
         try {
             // get the updated row
             const new_row = await this.dbObj.updateRowById(this.dbConnection, id, attr, value)
-            console.log(new_row)
+            return new_row
         } catch(err) {
             console.log("unsuccessful end of process")
+            return err
         }
     }
 
-    destroy(id) {
-        this.dbObj.deleteRowById(this.dbConnection, id)
+    async destroy(id) {
+        const res = await this.dbObj.deleteRowById(this.dbConnection, id)
+        return res
     }
+
+    async authenticate(email, password) {
+        const rowid = await this.dbObj.findByEmailAndPassword(this.dbConnection, email, password)
+        return {"msg" : "succesfully authenticated", "id" : rowid["rowid"]}
+    }
+
 }
 
-
-let user = new User()
+module.exports = User
